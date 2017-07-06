@@ -1,0 +1,6 @@
+MySQL:
+  Ativar: false
+  User: 'root'
+  Password: '123'
+  Host: 'localhost'
+  Database: 'MCBoosters'

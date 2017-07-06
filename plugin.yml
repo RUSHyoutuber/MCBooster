@@ -1,0 +1,8 @@
+name: MCBooster
+version: 1.0
+main: br.com.mcbooster.MCBooster
+author: TequilAxBr
+commands:
+    givebooster:
+      aliases: [gbooster, gb]
+    booster:
