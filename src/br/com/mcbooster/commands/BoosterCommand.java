@@ -15,65 +15,99 @@ import org.bukkit.inventory.meta.ItemMeta;
 import br.com.mcbooster.MCBooster;
 import br.com.mcbooster.models.PlayerBooster;
 
-public class BoosterCommand implements CommandExecutor{
-	
+public class BoosterCommand implements CommandExecutor {
+
 	public ItemStack item;
-	private MCBooster plugin;
-	
-	public BoosterCommand(MCBooster plugin) {
-		this.plugin = plugin;
+	private MCBooster pl;
+
+	public BoosterCommand(MCBooster pl) {
+		this.pl = pl;
 		this.item = new ItemStack(Material.EXP_BOTTLE);
-		ItemMeta itemMeta = item.getItemMeta();
-		itemMeta.setDisplayName("§aBooster de Experiência");
+		ItemMeta meta = item.getItemMeta();
 		List<String> lore = new ArrayList<>();
-		lore.add("§7* Receba §f1 hora §7de §fDuplo XP §7em qual quer habilidade!");
-		itemMeta.setLore(lore);
-		this.item.setItemMeta(itemMeta);
-		plugin.getCommand("givebooster").setExecutor(this);
-		plugin.getCommand("booster").setExecutor(this);
+		String nome = pl.config.getString("Nome-Do-Booster").replace('&', '§');
+		for (String str : pl.config.getStringList("Lore-Do-Booster"))
+			lore.add(str.replace('&', '§'));
+		meta.setLore(lore);
+		meta.setDisplayName(nome);
+		this.item.setItemMeta(meta);
+		pl.getCommand("givebooster").setExecutor(this);
+		pl.getCommand("booster").setExecutor(this);
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String arg2, String[] args) {
+	public boolean onCommand(CommandSender s, Command cmd, String lbl, String[] args) {
 
-		if(cmd.getName().equalsIgnoreCase("givebooster")){
-			if(args.length == 1 && sender.hasPermission("booster.admin")){
-				Player target = Bukkit.getPlayerExact(args[0]);
-				if(target == null){
-					sender.sendMessage("§7* O jogador(a) §f" + args[0] + " §7está offline.");
-					return true;
-				}
-				if(target.getInventory().firstEmpty() == -1){
-					sender.sendMessage("§7* O jogador(a) §f" + args[0] + " §7está com inventário §fcheio§7.");
-					return true;
-				}
-				target.getInventory().addItem(this.item);
-				target.updateInventory();
+		/**
+		 * @command /givebooster
+		 */
+		if (cmd.getName().equalsIgnoreCase("givebooster")) {
+			if (args.length < 1 || args.length > 2) {
+				s.sendMessage(pl.config.getString("Givebooster-Comando-Incorreto").replace('&', '§'));
+				return true;
 			}
+			
+			if (!s.hasPermission("booster.admin")) {
+				s.sendMessage(pl.config.getString("Givebooster-Sem-Permissao").replace('&', '§').replace("{player}", s.getName()));
+				return true;
+			}
+			
+			Player target = Bukkit.getPlayer(args[0]);
+			if (target == null) {
+				s.sendMessage(pl.config.getString("Givebooster-Player-Offline").replace('&', '§').replace("{player}", args[0]));
+				return true;
+			}
+			
+			int quantia = 1;
+			if (args.length > 1) {
+				try {
+					quantia = Integer.valueOf(args[1]);
+				} catch (Exception e) {
+					s.sendMessage(pl.config.getString("Givebooster-Quantia-Invalida").replace('&', '§').replace("{numero}", args[1]));
+					return true;
+				}
+			}
+			
+			s.sendMessage(pl.config.getString("Givebooster-Sucesso").replace('&', '§').replace("{player}", target.getName()));
+			addItem(target, quantia);
+			return true;
 		}
-		
-		if(cmd.getName().equalsIgnoreCase("booster")){
-			if(!(sender instanceof Player)) return true;
-			Player player = (Player) sender;
-			if(this.plugin.playerBoosterManager.hasBoosterActived(player.getName())){
-				PlayerBooster playerBooster = this.plugin.playerBoosterManager.getPlayerBooster(player.getName());
+
+		/**
+		 * @command /booster
+		 */
+		if (cmd.getName().equalsIgnoreCase("booster")) {
+			if (!(s instanceof Player)) {
+				s.sendMessage(pl.config.getString("Booster-Console-Nao-Pode").replace('&', '§'));
+				return true;
+			}
+			
+			Player p = (Player) s;
+			if (this.pl.playerBoosterManager.hasBoosterActived(p.getName())) {
+				PlayerBooster playerBooster = this.pl.playerBoosterManager.getPlayerBooster(p.getName());
 				long time = playerBooster.getEndTime() - System.currentTimeMillis();
-				String timer = this.plugin.formatDifference(time);
-				if(!timer.equals("agora")){
-					player.sendMessage("§7* Você já possui um booster ativado na skill §f" + playerBooster.getSkillType().getName() + "§7.");
-					player.sendMessage("§7* Tempo restante: §f" + timer + "§7.");
+				String timer = this.pl.formatDifference(time);
+				String skill = playerBooster.getSkillType().getName();
+				if (!timer.equals("agora")) {
+					s.sendMessage(pl.config.getString("Booster-Ativado").replace('&', '§').replace("{skill}", skill).replace("{tempo}", timer));
 					return true;
-				}else{
-					this.plugin.playerBoosterManager.removeBooster(player.getName());
+				} else {
+					this.pl.playerBoosterManager.removeBooster(p.getName());
 				}
-			}else{
-				player.sendMessage("§7* Você não possui nenhum booster ativo!");
 			}
+			
+			s.sendMessage(pl.config.getString("Booster-Nao-Possui").replace('&', '§'));
+			return true;
 		}
-		
-		return false;
+		return true;
 	}
-
 	
-	
+	private void addItem(Player p, int quantia) {
+		this.item.setAmount(quantia);
+		if (p.getInventory().firstEmpty() == -1) 
+			p.getWorld().dropItem(p.getLocation(), this.item);
+		else
+			p.getInventory().addItem(this.item);
+	}
 }

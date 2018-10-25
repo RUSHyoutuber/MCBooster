@@ -1,6 +1,198 @@
+file-version: 1
+
+##
+# Database
+###
 MySQL:
   Ativar: false
   User: 'root'
   Password: '123'
   Host: 'localhost'
   Database: 'MCBoosters'
+
+##
+# Mensagens
+###
+Givebooster-Comando-Incorreto: "&cComando incorreto, use /givebooster <player> [quantia]"
+Givebooster-Sem-Permissao: "&cVocê não tem permissão para executar este comando."
+Givebooster-Player-Offline: "&cEste player não esta online no momento ou não existe."
+Givebooster-Quantia-Invalida: "&cA quantia {numero} não é um número valido."
+Givebooster-Sucesso: "&aBooster enviado com sucesso para {player}."
+Booster-Console-Nao-Pode: "&cO console nao pode executar este comando."
+Booster-Nao-Possui: "&cVocê não possui nenhum Booster ativo!"
+Booster-Ativado: "&7* Você possui um Booster ativo na Skill de &f{skill}&7.\n&7* Tempo restante: &f{tempo}&7."
+Acabou-Booster: "&7* O seu booster ativado na Skill §f{skill} §7acabou!"
+Booster-Ja-Ativado: "&7* Você já possui um Booster ativo na Skill de &f{skill}&7.\n&7* Tempo restante: &f{tempo}&7."
+Booster-Ativado-Sucesso: "&7* Booster ativado com sucesso na Skill de &f{skill}&7."
+Booster-Error: "&cVocê precisa estar segurando um Booster na mão para poder fazer isso."
+# Permissão para comando /givebooster - booster.admin
+
+##
+# Item do Booster
+###
+Nome-Do-Booster: "&aBooster de Experiência"
+Lore-Do-Booster: 
+   - "&7* Receba &f1 hora &7de &fDuplo XP &7em qual quer habilidade!" 
+   - " "
+   
+##
+# Menu-Gui
+###
+Titulo-Do-Menu: "&8Escolha a habilidade:"
+Linhas-Do-Menu: 5
+Skills:
+   Acrobatics:
+      Ativar: true
+      Slot: 20
+      Id: 313
+      Data: 0
+      Nome: "&aAcrobacias"
+      Lore: 
+         - " "
+         - "&7Ativar booster na habilidade de Acrobacias."
+         - " "
+      Flags: true
+   
+   Alchemy:
+      Ativar: true
+      Slot: 24
+      Id: 379
+      Data: 0
+      Nome: "&aAlquimia"
+      Lore: 
+         - " "
+         - "&7Ativar booster na habilidade de Alquimia."
+         - " "
+      Flags: false
+      
+   Archery:
+      Ativar: true
+      Slot: 16
+      Id: 261
+      Data: 0
+      Nome: "&aArqueiro"
+      Lore: 
+         - " "
+         - "&7Ativar booster na habilidade de Arqueiro."
+         - " "
+      Flags: false
+      
+   Axes:
+      Ativar: true
+      Slot: 14
+      Id: 279
+      Data: 0
+      Nome: "&aMachados"
+      Lore: 
+         - " "
+         - "&7Ativar booster na habilidade de Machados."
+         - " "
+      Flags: true
+      
+   Excavation:
+      Ativar: true
+      Slot: 32
+      Id: 277
+      Data: 0
+      Nome: "&aEscavação"
+      Lore: 
+         - " "
+         - "&7Ativar booster na habilidade de Excavação."
+         - " "
+      Flags: true
+      
+   Fishing:
+      Ativar: false
+      Slot: 0
+      Id: 346
+      Data: 0
+      Nome: "&aPescaria"
+      Lore: 
+         - " "
+         - "&7Ativar booster na habilidade de Pescaria."
+         - " "
+      Flags: false
+      
+   Herbalism:
+      Ativar: true
+      Slot: 28
+      Id: 293
+      Data: 0
+      Nome: "&aHerbalismo"
+      Lore: 
+         - " "
+         - "&7Ativar booster na habilidade de Herbalismo."
+         - " "
+      Flags: true
+      
+   Mining:
+      Ativar: true
+      Slot: 30
+      Id: 278
+      Data: 0
+      Nome: "&aMineração"
+      Lore: 
+         - " "
+         - "&7Ativar booster na habilidade de Mineração."
+         - " "
+      Flags: true
+      
+   Repair:
+      Ativar: true
+      Slot: 22
+      Id: 145
+      Data: 0
+      Nome: "&aReparação"
+      Lore: 
+         - " "
+         - "&7Ativar booster na habilidade de Reparação."
+         - " "
+      Flags: false
+      
+   Swords:
+      Ativar: true
+      Slot: 10
+      Id: 276
+      Data: 0
+      Nome: "&aEspadas"
+      Lore: 
+         - " "
+         - "&7Ativar booster na habilidade de Espadas."
+         - " "
+      Flags: true
+      
+   Unarmed:
+      Ativar: true
+      Slot: 12
+      Id: 416
+      Data: 0
+      Nome: "&aDesarmado"
+      Lore: 
+         - " "
+         - "&7Ativar booster na habilidade de Desarmado."
+         - " "
+      Flags: false
+      
+   Woodcutting:
+      Ativar: true
+      Slot: 34
+      Id: 271
+      Data: 0
+      Nome: "&aLenhador"
+      Lore: 
+         - " "
+         - "&7Ativar booster na habilidade de Lenhador."
+         - " "
+      Flags: true
+      
+   Taming:
+      Ativar: false
+      Slot: 0
+      Id: 421
+      Data: 0
+      Nome: "&aDomador"
+      Lore: 
+         - " "
+         - "&7Ativar booster na habilidade de Domador."
+         - " "
+      Flags: false

@@ -1,8 +1,12 @@
 name: MCBooster
-version: 1.0
+version: 2.0
 main: br.com.mcbooster.MCBooster
-author: TequilAxBr
+authors: [TequilAxBr, RUSH]
+
 commands:
-    givebooster:
-      aliases: [gbooster, gb]
-    booster:
+  givebooster:
+    aliases: [gb]
+    description: Envia um Booster para um player.
+    permission: booster.admin
+  booster:
+    description: Mostra informações sobre o seu Booster.

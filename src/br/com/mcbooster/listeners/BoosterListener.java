@@ -1,20 +1,23 @@
 package br.com.mcbooster.listeners;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event.Result;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.ClickType;
-import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -25,148 +28,125 @@ import br.com.mcbooster.models.PlayerBooster;
 
 public class BoosterListener implements Listener {
 
-	private MCBooster plugin;
+	private MCBooster pl;
 	private Inventory inventory;
+	private HashMap<Integer, SkillType> menu;
 
-	public BoosterListener(MCBooster plugin) {
-		this.plugin = plugin;
-		this.inventory = Bukkit.createInventory(null, 27, "Escolha a habilidade:");
-		this.inventory.setItem(12, createItem(Material.DIAMOND_PICKAXE, "§aMineração", new String[] { "§7* Ative o booster nessa habilidade!" }, 1, 0));
-		this.inventory.setItem(11, createItem(Material.BOW, "§aArqueiro", new String[] { "§7* Ative o booster nessa habilidade!" }, 1, 0));
-		this.inventory.setItem(10, createItem(Material.DIAMOND_SWORD, "§aEspadas", new String[] { "§7* Ative o booster nessa habilidade!" }, 1, 0));
-		this.inventory.setItem(14, createItem(Material.DIAMOND_SPADE, "§aEscavação", new String[] { "§7* Ative o booster nessa habilidade!" }, 1, 0));
-		this.inventory.setItem(15, createItem(Material.ANVIL, "§aReparação", new String[] { "§7* Ative o booster nessa habilidade!" }, 1, 0));
-		this.inventory.setItem(16, createItem(Material.DIAMOND_BOOTS, "§aAcrobacia", new String[] { "§7* Ative o booster nessa habilidade!" }, 1, 0));
-		Bukkit.getPluginManager().registerEvents(this, plugin);
-	}
-
-	@EventHandler
-	private void onInteract(PlayerInteractEvent event){
-		Player player = event.getPlayer();
-		if(player.getItemInHand() != null && player.getItemInHand().getTypeId() != 0 && player.getItemInHand().getType() == Material.EXP_BOTTLE && player.getItemInHand().hasItemMeta() && player.getItemInHand().getItemMeta().hasDisplayName() && player.getItemInHand().getItemMeta().hasLore()){
-			if(player.getItemInHand().getItemMeta().getDisplayName().equals("§aBooster de Experiência")){
-				event.setCancelled(true);
-				if(this.plugin.playerBoosterManager.hasBoosterActived(player.getName())){
-					PlayerBooster playerBooster = this.plugin.playerBoosterManager.getPlayerBooster(player.getName());
-					long time = playerBooster.getEndTime() - System.currentTimeMillis();
-					String timer = this.plugin.formatDifference(time);
-					if(!timer.equals("agora")){
-						player.sendMessage("§7* Você já possui um booster ativado na skill §f" + playerBooster.getSkillType().getName() + "§7.");
-						player.sendMessage("§7* Tempo restante: §f" + timer + "§7.");
-						return;
-					}else{
-						this.plugin.playerBoosterManager.removeBooster(player.getName());
-					}
-				}
-				player.updateInventory();
-				player.openInventory(this.inventory);
+	public BoosterListener(MCBooster pl) {
+		this.pl = pl;
+		this.menu = new HashMap<>();
+		this.inventory = Bukkit.createInventory(null, pl.getConfig().getInt("Linhas-Do-Menu") * 9, pl.config.getString("Titulo-Do-Menu").replace('&', '§'));
+		for (String skill : pl.config.getConfigurationSection("Skills").getKeys(false)) {
+			if (pl.config.getBoolean("Skills." + skill + ".Ativar")) {
+				int slot = pl.config.getInt("Skills."+ skill +".Slot");
+				this.inventory.setItem(slot, createItem(skill));
+				this.menu.put(slot, SkillType.valueOf(skill.toUpperCase()));
 			}
 		}
+		Bukkit.getPluginManager().registerEvents(this, pl);
 	}
 
 	@EventHandler
-	private void onClick(InventoryClickEvent event){
-		if(event.getCurrentItem() == null || event.getCurrentItem().getType() == Material.AIR){
-			return;
-		}
-		if(event.getInventory().getName().equals(this.inventory.getName())){
-			event.setCancelled(true);
-		}
-		if(event.getWhoClicked() instanceof Player && event.getClickedInventory().getName().equals(this.inventory.getName())){
-			Player player = (Player) event.getWhoClicked();
-			ItemStack item = event.getCurrentItem();
-			if(item.hasItemMeta() && item.getItemMeta().hasDisplayName() && item.getItemMeta().hasLore() && player.getItemInHand() != null && player.getItemInHand().getType() != Material.AIR && player.getItemInHand().getType() == Material.EXP_BOTTLE && player.getItemInHand().hasItemMeta() && player.getItemInHand().getItemMeta().hasDisplayName() && player.getItemInHand().getItemMeta().hasLore() && player.getItemInHand().getItemMeta().getDisplayName().equals("§aBooster de Experiência")){
-				if(!this.plugin.playerBoosterManager.hasBoosterActived(player.getName())){
-					boolean remove = false;
-					if(item.getItemMeta().getDisplayName().equals("§aMineração")){
-						this.plugin.playerBoosterManager.setBooster(player.getName(), SkillType.MINING);
-						player.sendMessage("§7* Parabéns, você ativou um booster na habilidade §fMineração§7!");
-						remove = true;
-					}
-					if(item.getItemMeta().getDisplayName().equals("§aArqueiro")){
-						this.plugin.playerBoosterManager.setBooster(player.getName(), SkillType.ARCHERY);
-						player.sendMessage("§7*Parabéns, você ativou um booster na habilidade §fArqueiro§7!");
-						remove = true;
-					}
-					if(item.getItemMeta().getDisplayName().equals("§aEspadas")){
-						this.plugin.playerBoosterManager.setBooster(player.getName(), SkillType.SWORDS);
-						player.sendMessage("§7* Parabéns, você ativou um booster na habilidade §fEspadas§7!");
-						remove = true;
-					}
-					if(item.getItemMeta().getDisplayName().equals("§aEscavação")){
-						this.plugin.playerBoosterManager.setBooster(player.getName(), SkillType.EXCAVATION);
-						player.sendMessage("§7* Parabéns, você ativou um booster na habilidade §fEscavação§7!");
-						remove = true;
-					}
-					if(item.getItemMeta().getDisplayName().equals("§aReparação")){
-						this.plugin.playerBoosterManager.setBooster(player.getName(), SkillType.REPAIR);
-						player.sendMessage("§7* Parabéns, você ativou um booster na habilidade §fReparação§7!");
-						remove = true;
-					}
-					if(item.getItemMeta().getDisplayName().equals("§aAcrobacia")){
-						this.plugin.playerBoosterManager.setBooster(player.getName(), SkillType.ACROBATICS);
-						player.sendMessage("§7* Parabéns, você ativou um booster na habilidade §fAcrobacia§7!");
-						remove = true;
-					}
-					if(remove){
-						if(player.getItemInHand().getAmount() - 1 >= 1){
-							ItemStack is = new ItemStack(Material.EXP_BOTTLE, player.getItemInHand().getAmount() - 1);
-							ItemMeta itemMeta = is.getItemMeta();
-							itemMeta.setDisplayName("§aBooster de Experiência");
-							List<String> lore = new ArrayList<>();
-							lore.add("§7* Receba §f1 hora §7de §fDuplo XP §7em qual quer habilidade!");
-							itemMeta.setLore(lore);
-							is.setItemMeta(itemMeta);
-							player.setItemInHand(is);
-						}else{
-							player.setItemInHand(null);
+	private void onInteract(PlayerInteractEvent e) {
+		if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
+			Player p = e.getPlayer();
+			ItemStack hand = p.getItemInHand();
+			if (hand != null && hand.getType() != Material.AIR && hand.getType() == Material.EXP_BOTTLE && hand.hasItemMeta() && hand.getItemMeta().hasDisplayName() && hand.getItemMeta().hasLore()) {
+				if (hand.getItemMeta().getDisplayName().equals("§aBooster de Experiência")) {
+					e.setCancelled(true);
+					if (this.pl.playerBoosterManager.hasBoosterActived(p.getName())) {
+						PlayerBooster playerBooster = this.pl.playerBoosterManager.getPlayerBooster(p.getName());
+						long time = playerBooster.getEndTime() - System.currentTimeMillis();
+						String timer = this.pl.formatDifference(time);
+						String skill = playerBooster.getSkillType().getName();
+						if (!timer.equals("agora")) {
+							p.sendMessage(pl.config.getString("Booster-Ja-Ativado").replace('&', '§').replace("{skill}", skill).replace("{tempo}", timer));
+							return;
+						} else {
+							this.pl.playerBoosterManager.removeBooster(p.getName());
 						}
-						remove = false;
 					}
-					player.closeInventory();
-					player.updateInventory();
+					p.openInventory(this.inventory);
 				}
-			}else{
-				player.sendMessage("§7* Você precisa estar segurando um §fbooster §7para selecionar a habilidade.");
-				player.closeInventory();
 			}
 		}
 	}
 
 	@EventHandler
-	private void onQuit(PlayerQuitEvent event){
+	private void onClick(InventoryClickEvent e) {
+		if (e.getCurrentItem() != null && e.getCurrentItem().getType() != Material.AIR && e.getInventory().getType() == InventoryType.CHEST) {
+			if (e.getInventory().getName().equals(this.inventory.getName())) {
+				e.setCancelled(true);
+				e.setResult(Result.DENY);
+				Player p = (Player) e.getWhoClicked();
+				ItemStack hand = p.getItemInHand();
+				if (hand != null && hand.getType() != Material.AIR && hand.getType() == Material.EXP_BOTTLE && hand.hasItemMeta() && hand.getItemMeta().hasDisplayName() && hand.getItemMeta().hasLore()) {
+					if (!this.pl.playerBoosterManager.hasBoosterActived(p.getName())) {
+						int slot = e.getSlot();
+						if (menu.containsKey(slot)) {
+							removeBooster(p);
+							SkillType skill = menu.get(slot);
+							this.pl.playerBoosterManager.setBooster(p.getName(), skill);
+							p.sendMessage(pl.config.getString("Booster-Ativado-Sucesso").replace('&', '§').replace("{skill}", skill.getName()));
+							p.closeInventory();
+						}
+					}
+				} else {
+					p.sendMessage(pl.config.getString("Booster-Error").replace('&', '§'));
+					p.closeInventory();
+				}
+			}
+		}
+	}
+
+	@EventHandler
+	private void onQuit(PlayerQuitEvent event) {
 		Player player = event.getPlayer();
-		if(this.plugin.playerBoosterManager.hasBoosterActived(player.getName())){
-			PlayerBooster playerBooster = this.plugin.playerBoosterManager.getPlayerBooster(player.getName());
+		if (this.pl.playerBoosterManager.hasBoosterActived(player.getName())) {
+			PlayerBooster playerBooster = this.pl.playerBoosterManager.getPlayerBooster(player.getName());
 			long rest = playerBooster.getEndTime() - System.currentTimeMillis();
 			playerBooster.setRest(rest);
 			playerBooster.setCheck(false);
-			this.plugin.sql.setRest(player.getName(), rest);
+			this.pl.sql.setRest(player.getName(), rest);
 		}
 	}
 
 	@EventHandler
-	private void onJoin(PlayerJoinEvent event){
+	private void onJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
-		if(this.plugin.playerBoosterManager.hasBoosterActived(player.getName())){
-			PlayerBooster playerBooster = this.plugin.playerBoosterManager.getPlayerBooster(player.getName());
+		if (this.pl.playerBoosterManager.hasBoosterActived(player.getName())) {
+			PlayerBooster playerBooster = this.pl.playerBoosterManager.getPlayerBooster(player.getName());
 			playerBooster.setEndTime(System.currentTimeMillis() + playerBooster.getRest());
 			playerBooster.setCheck(true);
 		}
 	}
-
-	private ItemStack createItem(Material material, String nome, String[] lore, int quantidade, int metadata) {
-		ItemStack item = new ItemStack(material, quantidade, (byte) metadata);
-		ItemMeta itemM = item.getItemMeta();
-		itemM.setDisplayName(nome);
-		List<String> itemLore = new ArrayList<>();
-		if (lore != null) {
-			for (String loree : lore) {
-				itemLore.add(loree);
-			}
-			itemM.setLore(itemLore);
+	
+	private void removeBooster(Player p) {
+		if (p.getItemInHand().getAmount() < 2) {
+			p.setItemInHand(new ItemStack(Material.AIR));
+		} else {
+			ItemStack item = p.getItemInHand();
+			item.setAmount(item.getAmount() - 1);
 		}
-		item.setItemMeta(itemM);
+	}
+
+	@SuppressWarnings("deprecation")
+	private ItemStack createItem(String skill) {
+		int id = pl.config.getInt("Skills." + skill + ".Id");
+		int data = pl.config.getInt("Skills." + skill + ".Data");
+		boolean flags = pl.config.getBoolean("Skills." + skill + ".Flags");
+		String nome = pl.getConfig().getString("Skills." + skill + ".Nome").replace('&', '§');
+		List<String> lore = new ArrayList<>();
+		ItemStack item = new ItemStack(id);
+		ItemMeta meta = item.getItemMeta();
+		for (String str : pl.config.getStringList("Skills." + skill + ".Lore")) 
+			lore.add(str.replace('&', '§'));
+		if (flags)
+			meta.addItemFlags(ItemFlag.values());
+		meta.setDisplayName(nome);
+		meta.setLore(lore);
+		item.setItemMeta(meta);
+		item.setDurability((short) data);
 		return item;
 	}
 

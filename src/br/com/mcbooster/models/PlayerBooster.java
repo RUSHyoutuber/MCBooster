@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit;
 import com.gmail.nossr50.datatypes.skills.SkillType;
 
 public class PlayerBooster {
-	
+
 	private String nick;
 	private SkillType skillType;
 	private long endTime;
@@ -20,17 +20,17 @@ public class PlayerBooster {
 		this.activedTime = System.currentTimeMillis();
 		this.check = true;
 	}
-	
+
 	public PlayerBooster(String nick, String skillType, long endTime) {
 		this.nick = nick;
 		this.skillType = SkillType.getSkill(skillType);
 		this.endTime = endTime;
 	}
-	
+
 	public long getRest() {
 		return rest;
 	}
-	
+
 	public void setRest(long rest) {
 		this.rest = rest;
 	}
@@ -38,15 +38,15 @@ public class PlayerBooster {
 	public long getActivedTime() {
 		return activedTime;
 	}
-	
+
 	public String getNick() {
 		return nick;
 	}
-	
+
 	public SkillType getSkillType() {
 		return skillType;
 	}
-	
+
 	public long getEndTime() {
 		return endTime;
 	}
@@ -62,5 +62,5 @@ public class PlayerBooster {
 	public void setEndTime(long endTime) {
 		this.endTime = endTime;
 	}
-	
+
 }
